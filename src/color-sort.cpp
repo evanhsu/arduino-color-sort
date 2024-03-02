@@ -9,6 +9,7 @@
 // Include Particle Device OS APIs
 #include "Particle.h"
 #include "Adafruit_TCS34725.h"
+#include "Stepper.h"
 
 // Let Device OS manage the connection to the Particle Cloud
 SYSTEM_MODE(AUTOMATIC);
@@ -27,11 +28,8 @@ Servo LoadingWheel;
 Servo Chute;
 
 // PIN definitions
-const pin_t LOADING_WHEEL_PIN = D1;
 const pin_t CHUTE_PIN = D2;
-const pin_t PWM_CHUTE_PIN = D3;
-
-const pin_t COLOR_LED = D4;
+const pin_t COLOR_LED = D3;
 
 const int RED_CUP = 1;
 const int GREEN_CUP = 2;
@@ -53,6 +51,8 @@ const int BLUE_CUP = 3;
 // TCS34725_INTEGRATIONTIME_700MS
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_1X);
+
+Stepper stepper = Stepper(200, D4, D5, D6, D7);
 
 // Keep track of the cup that the chute is currently pointed at
 int currentChuteCup = 0;
@@ -184,12 +184,7 @@ String readColor() {
 
 
 void advanceLoadingWheel() {
-  int stop = 0;
-  int go = 100;
-
-  LoadingWheel.write(go); // tell the Loading Wheel to start turning
-  delay(200); // Let the wheel keep turning for 200ms before we tell it to stop...
-  LoadingWheel.write(stop); // tell the Loading Wheel to stop turning
+    stepper.step(66);
 }
 
 void moveChute(int cup) {
@@ -239,10 +234,7 @@ void moveChute(int cup) {
 
 // setup() runs once, when the device is first turned on
 void setup() {
-    // Tell the program that the "Loading Wheel" servo is connected to the PIN named "D1"
-    LoadingWheel.attach(LOADING_WHEEL_PIN);
-
-    // Tell the program that the "Chute" servo is connected to the PIN named "D2"
+    // Tell the program that the "Chute" servo is connected to the PIN named "CHUTE_PIN"
     // Chute.attach(CHUTE_PIN, 600, 2500, 0, 180); // Used with the Photon
     Chute.attach(CHUTE_PIN); // Used with the Argon
 
@@ -256,6 +248,12 @@ void setup() {
 
     colorSensor.begin();
     pinMode(COLOR_LED, OUTPUT);
+
+    // Stepper motor pins
+    pinMode(D4, OUTPUT);
+    pinMode(D5, OUTPUT);
+    pinMode(D6, OUTPUT);
+    pinMode(D7, OUTPUT);
 
     digitalWrite(COLOR_LED, LOW);
 }
@@ -274,6 +272,7 @@ void loop() {
             moveChute(BLUE_CUP);
         }
 
+
         // Optional delay while the chute finishes moving (may not be necessary)...
         // delay(250);
 
@@ -281,6 +280,7 @@ void loop() {
         // advanceLoadingWheel();
 
         delay(1500);
+        advanceLoadingWheel();
     }
 
     // moveChute(1);
