@@ -61,7 +61,7 @@ int servoDegrees = 0;
 bool clockwise = true;
 // If the wheel doesn't return to its exact starting point on every 3rd movement, adjust the calibrationSteps
 // to add or subtract movement
-int loadingWheelCalibrationSteps = 0;
+int loadingWheelCalibrationSteps = 2; // Default: 2
 
 // Keep track of the current stepper position (out of the 3 possible positions) so that we can
 // apply correction on every 3rd movement
