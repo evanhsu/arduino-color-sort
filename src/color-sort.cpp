@@ -67,6 +67,7 @@ int loadingWheelCalibrationSteps = 0;
 // apply correction on every 3rd movement
 int stepperMovements = 0;
 
+int waitTimeBetweenSkittles = 150;
 bool isActive = TRUE;
 
 int servoControl(String command)
@@ -112,6 +113,16 @@ int toggleActive(String command) {
     }
 
     return 1;
+}
+
+int setLoadingWheelCalibrationSteps(String command) {
+   loadingWheelCalibrationSteps = command.toInt();
+   return loadingWheelCalibrationSteps;
+}
+
+int setWaitTimeBetweenSkittles(String command) {
+    waitTimeBetweenSkittles = command.toInt();
+    return waitTimeBetweenSkittles;
 }
 
 // Convert to a 0 - 255 scale
@@ -275,12 +286,15 @@ void setup() {
     // Register a cloud function that can be invoked remotely
     Particle.function("servo", servoControl);
     Particle.function("toggleActive", toggleActive);
+    Particle.function("setLoadingWheelCalibrationSteps", setLoadingWheelCalibrationSteps);
+    Particle.function("setWaitTimeBetweenSkittles", setWaitTimeBetweenSkittles);
 
     // Keep a cloud variable for the current position
     Particle.variable("servoDegrees" , &servoDegrees , INT );
     Particle.variable("isActive" , &isActive, BOOLEAN );
     Particle.variable("clockwise" , &clockwise, BOOLEAN );
     Particle.variable("loadingWheelCalibrationSteps", &loadingWheelCalibrationSteps, INT);
+    Particle.variable("waitTimeBetweenSkittles", &waitTimeBetweenSkittles, INT);
 
     colorSensor.begin();
     pinMode(COLOR_LED, OUTPUT);
@@ -295,6 +309,7 @@ void loop() {
   // The core of your code will likely live here.
     if (isActive) {
         String currentColor = readColor();
+        Particle.publish(currentColor);
 
         if (currentColor == "red") {
             moveChute(RED_CUP);
@@ -315,7 +330,7 @@ void loop() {
         // Advance to the next Skittle
         advanceLoadingWheel();
 
-        delay(100);
+        delay(waitTimeBetweenSkittles);
     }
 
     // moveChute(1);
