@@ -30,9 +30,9 @@ const pin_t COLOR_LED = D3;
 
 const int RED_CUP = 1;
 const int GREEN_CUP = 2;
-const int BLUE_CUP = 3;
-// const int RED_CUP = 1;
-// const int RED_CUP = 1;
+const int YELLOW_CUP = 3;
+const int PURPLE_CUP = 1;
+const int ORANGE_CUP = 1;
 
 // Gain options:
 // TCS34725_GAIN_1X
@@ -300,8 +300,12 @@ void loop() {
             moveChute(RED_CUP);
         } else if (currentColor == "green") {
             moveChute(GREEN_CUP);
-        } else if (currentColor == "blue") {
-            moveChute(BLUE_CUP);
+        } else if (currentColor == "yellow") {
+            moveChute(YELLOW_CUP);
+        } else if (currentColor == "purple") {
+            moveChute(PURPLE_CUP);
+        } else if (currentColor == "orange") {
+            moveChute(ORANGE_CUP);
         }
 
 
