@@ -197,20 +197,27 @@ String readColor() {
     Log.info("Lux: " + String(colorSensor.calculateLux(r,g,b)));
 
     if (isRed(rr,gg,bb)) {
+        Particle.publish("Red (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
         return "red";
     }
     if (isGreen(rr,gg,bb)) {
+        Particle.publish("Green (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
         return "green";
     }
     if (isYellow(rr,gg,bb)) {
+        Particle.publish("Yellow (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
         return "yellow";
     }
     if (isPurple(rr,gg,bb)) {
+        Particle.publish("Purple (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
         return "purple";
     }
     if (isOrange(rr,gg,bb)) {
+        Particle.publish("Orange (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
         return "orange";
     }
+
+    Particle.publish("Color unknown (RGB: " + String(rr) + "," + String(gg) + "," + String(bb) + ")");
     return "unknown";
 }
 
@@ -309,7 +316,6 @@ void loop() {
   // The core of your code will likely live here.
     if (isActive) {
         String currentColor = readColor();
-        Particle.publish(currentColor);
 
         if (currentColor == "red") {
             moveChute(RED_CUP);
