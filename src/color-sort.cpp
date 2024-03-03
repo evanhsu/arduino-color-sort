@@ -21,9 +21,6 @@ SYSTEM_THREAD(ENABLED);
 // View logs with CLI using 'particle serial monitor --follow'
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
-// The "LoadingWheel" is a continuous-rotation servo.
-Servo LoadingWheel;
-
 // The Chute is a conventional servo (position-control)
 Servo Chute;
 
@@ -52,11 +49,23 @@ const int BLUE_CUP = 3;
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_1X);
 
-Stepper stepper = Stepper(200, D4, D5, D6, D7);
+const int stepsPerRevolution = 200;
+Stepper stepper(stepsPerRevolution, D4, D5, D6, D7);
 
 // Keep track of the cup that the chute is currently pointed at
 int currentChuteCup = 0;
 int servoDegrees = 0;
+
+// Configure the "loading wheel" direction of rotation. The wiring of the stepper motor may cause the
+// direction of rotation to reverse. Use this value to toggle direction.
+bool clockwise = true;
+// If the wheel doesn't return to its exact starting point on every 3rd movement, adjust the calibrationSteps
+// to add or subtract movement
+int loadingWheelCalibrationSteps = 0;
+
+// Keep track of the current stepper position (out of the 3 possible positions) so that we can
+// apply correction on every 3rd movement
+int stepperMovements = 0;
 
 bool isActive = TRUE;
 
@@ -121,23 +130,29 @@ float calibratedB(float b) {
     return calibratedRange(b, 40, 150);
 }
 
+// Returns true if the 'intValue' matches the referenceValue within the allowable margin of error
+// Example: (With margin == 10)
+//   isNearValue(128, 130); // true
+//   isNearValue(100, 111); // false 
+bool isNearValue(int intValue, int referenceValue) {
+    int margin = 25;
+    return ((referenceValue - margin) <= intValue) && ((referenceValue + margin) >= intValue);
+}
+
 bool isRed(float r, float g, float b) {
-    if ((r > g) && (r > b) && (r > 100)) {
-        return true;
-    }
-    return false;
+    return (r > 100) && isNearValue(g, 25) && isNearValue(b, 25);
 }
 bool isGreen(float r, float g, float b) {
-    if ((g > r) && (g > b) && (g > 100)) {
-        return true;
-    }
-    return false;
+    return (g > 100) && isNearValue(r, 25) && isNearValue(b, 25);
 }
-bool isBlue(float r, float g, float b) {
-    if ((b > r) && (b > g) && (b > 100)) {
-        return true;
-    }
-    return false;
+bool isYellow(float r, float g, float b) {
+    return isNearValue(r, 200) && isNearValue(g, 200) && isNearValue(b, 25);
+}
+bool isPurple(float r, float g, float b) {
+    return isNearValue(r, 200) && isNearValue(g, 25) && isNearValue(b, 200);
+}
+bool isOrange(float r, float g, float b) {
+    return isNearValue(r, 200) && isNearValue(g, 175) && isNearValue(b, 25);
 }
 
 String readColor() {
@@ -176,15 +191,34 @@ String readColor() {
     if (isGreen(rr,gg,bb)) {
         return "green";
     }
-    if (isBlue(rr,gg,bb)) {
-        return "blue";
+    if (isYellow(rr,gg,bb)) {
+        return "yellow";
+    }
+    if (isPurple(rr,gg,bb)) {
+        return "purple";
+    }
+    if (isOrange(rr,gg,bb)) {
+        return "orange";
     }
     return "unknown";
 }
 
 
 void advanceLoadingWheel() {
-    stepper.step(66);
+    Log.info("Stepping");
+    
+    // If the wheel doesn't return to its exact starting point on every 3rd movement, adjust the loadingWheelCalibrationSteps
+    // to add or subtract movement
+    int movement = stepsPerRevolution / 3;
+    int direction = clockwise ? 1 : -1;
+
+    if (stepperMovements == 2) {
+        stepper.step((movement + loadingWheelCalibrationSteps) * direction);
+        stepperMovements = 0;
+    } else {
+        stepper.step(movement * direction);
+        stepperMovements++;
+    }
 }
 
 void moveChute(int cup) {
@@ -245,15 +279,13 @@ void setup() {
     // Keep a cloud variable for the current position
     Particle.variable("servoDegrees" , &servoDegrees , INT );
     Particle.variable("isActive" , &isActive, BOOLEAN );
+    Particle.variable("clockwise" , &clockwise, BOOLEAN );
+    Particle.variable("loadingWheelCalibrationSteps", &loadingWheelCalibrationSteps, INT);
 
     colorSensor.begin();
     pinMode(COLOR_LED, OUTPUT);
 
-    // Stepper motor pins
-    pinMode(D4, OUTPUT);
-    pinMode(D5, OUTPUT);
-    pinMode(D6, OUTPUT);
-    pinMode(D7, OUTPUT);
+    stepper.setSpeed(30);
 
     digitalWrite(COLOR_LED, LOW);
 }
@@ -274,13 +306,12 @@ void loop() {
 
 
         // Optional delay while the chute finishes moving (may not be necessary)...
-        // delay(250);
+        delay(300);
 
         // Advance to the next Skittle
-        // advanceLoadingWheel();
-
-        delay(1500);
         advanceLoadingWheel();
+
+        delay(100);
     }
 
     // moveChute(1);
