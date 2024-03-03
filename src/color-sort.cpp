@@ -151,10 +151,10 @@ bool isNearValue(int intValue, int referenceValue) {
 }
 
 bool isRed(int r, int g, int b) {
-    return (r > 110) && isNearValue(g, 65) && isNearValue(b, 30);
+    return (r > 110) && isNearValue(g, 80) && isNearValue(b, 50);
 }
 bool isGreen(int r, int g, int b) {
-    return isNearValue(r, 67) && isNearValue(r, 145) && isNearValue(b, 30);
+    return isNearValue(r, 67) && isNearValue(g, 145) && isNearValue(b, 40);
 }
 bool isYellow(int r, int g, int b) {
     return isNearValue(r, 200) && isNearValue(g, 200) && isNearValue(b, 25);
