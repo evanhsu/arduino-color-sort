@@ -128,7 +128,7 @@ int setWaitTimeBetweenSkittles(String command) {
 // Convert to a 0 - 255 scale
 float calibratedRange(float inputVal, float low, float high) {
     float range = high - low;
-    return ((inputVal - low) / range * 256.0);
+    return ((inputVal - low) / range * 256);
 }
 
 float calibratedR(float r) {
@@ -150,19 +150,19 @@ bool isNearValue(int intValue, int referenceValue) {
     return ((referenceValue - margin) <= intValue) && ((referenceValue + margin) >= intValue);
 }
 
-bool isRed(float r, float g, float b) {
-    return (r > 100) && isNearValue(g, 25) && isNearValue(b, 25);
+bool isRed(int r, int g, int b) {
+    return (r > 110) && isNearValue(g, 65) && isNearValue(b, 30);
 }
-bool isGreen(float r, float g, float b) {
+bool isGreen(int r, int g, int b) {
     return (g > 100) && isNearValue(r, 25) && isNearValue(b, 25);
 }
-bool isYellow(float r, float g, float b) {
+bool isYellow(int r, int g, int b) {
     return isNearValue(r, 200) && isNearValue(g, 200) && isNearValue(b, 25);
 }
-bool isPurple(float r, float g, float b) {
+bool isPurple(int r, int g, int b) {
     return isNearValue(r, 200) && isNearValue(g, 25) && isNearValue(b, 200);
 }
-bool isOrange(float r, float g, float b) {
+bool isOrange(int r, int g, int b) {
     return isNearValue(r, 200) && isNearValue(g, 175) && isNearValue(b, 25);
 }
 
@@ -181,7 +181,7 @@ String readColor() {
         // Figure out some basic hex code for visualization
     uint32_t sum = clear;
     float r, g, b;     // Raw values
-    float rr, gg, bb;  // Calibrated values
+    int rr, gg, bb;  // Calibrated values
     
     r = red; r /= sum;
     g = green; g /= sum;
