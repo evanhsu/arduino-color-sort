@@ -154,7 +154,7 @@ bool isRed(int r, int g, int b) {
     return (r > 110) && isNearValue(g, 65) && isNearValue(b, 30);
 }
 bool isGreen(int r, int g, int b) {
-    return (g > 100) && isNearValue(r, 25) && isNearValue(b, 25);
+    return isNearValue(r, 67) && isNearValue(r, 145) && isNearValue(b, 30);
 }
 bool isYellow(int r, int g, int b) {
     return isNearValue(r, 200) && isNearValue(g, 200) && isNearValue(b, 25);
